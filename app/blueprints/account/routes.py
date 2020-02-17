@@ -1,8 +1,8 @@
 from app import db
-from app.models import User
-from flask import render_template, redirect, url_for, flash
-from app.forms import RegistrationForm, LoginForm
-from flask_login import login_user, logout_user
+from app.models import User, Reminders
+from flask import render_template, redirect, url_for, flash, session
+from app.forms import RegistrationForm, LoginForm, ReminderForm
+from flask_login import login_user, logout_user, login_required
 from app.blueprints.account import account
 
 @account.route('/login', methods=['GET','POST'])
@@ -19,7 +19,7 @@ def login():
 
         flash("You have logged in successfully!", "success")
         login_user(user)
-        return redirect(url_for('account.login'))
+        return redirect(url_for('account.reminders'))
     return render_template('login.html', **context)
 
 @account.route('/register', methods=['GET', 'POST'])
@@ -32,13 +32,37 @@ def register():
         db.session.commit()
         flash("You have registered successfully!", 'success')
         return redirect(url_for('account.login'))
-        
+  
     context = {
         'form': form
     }
     return render_template('register.html', **context)
 
+@account.route('/createreminder', methods=['GET', 'POST'])
+@login_required
+def createreminder():
+    form = ReminderForm()
+    context = {
+        'form': form
+    }
+    if form.validate_on_submit():
+        r = Reminders(name=form.name.data, email=form.email.data, repeat=form.repeat.data, enabled=form.enabled.data, amount=form.amount.data, due_on=form.due_on.data, remind_on=form.remind_on.data)
+        db.session.add(r)
+        db.session.commit()
+        flash("You have created a reminder!", 'success')
+    return render_template('createreminder.html', **context)
+
+@account.route('/reminders', methods=['GET', 'POST'])
+@login_required
+def reminders(): #Passes values to remindercard.html For dynamic card creation
+    user_ids=session["user_id"]
+    context = {
+        'remind' : Reminders.query.filter_by(user_id=user_ids).all()
+    }
+    return render_template('reminders.html', **context)
+
 @account.route('/logout')
+@login_required
 def logout():
     logout_user()
     flash("You have logged out", "danger")

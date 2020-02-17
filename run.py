@@ -1,6 +1,6 @@
-from app import app, db
-from app.models import User
+from app import app, db, cli
+from app.models import User, Reminders
 
 @app.shell_context_processor
 def get_context():
-    return dict(User = User, app=app, db=db)
+    return dict(User = User, Reminders = Reminders, app=app, db=db)

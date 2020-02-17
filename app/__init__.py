@@ -11,13 +11,15 @@ db = SQLAlchemy(app)
 from flask_migrate import Migrate
 migrate = Migrate(app, db)
 
+from app.blueprints.main import main
+app.register_blueprint(main, url_prefix='/')
+
 from flask_login import LoginManager
 login = LoginManager(app)
-
-from flask_cli import FlaskCLI
-cli = FlaskCLI(app)
+login.login_view = 'account.login'
+login.login_message_category = 'danger'
 
 from app.blueprints.account import account
 app.register_blueprint(account, url_prefix='/account')
 
-from app import models, routes, cli
+from app import models, cli

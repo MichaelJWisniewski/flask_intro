@@ -1,16 +1,13 @@
-from flask import cli
 import os, click
 from app import app
+from flask import cli
+from flask.cli import AppGroup
 
-@app.cli.group()
-def blueprint():
-    """Flask Blueprint commands"""
-    pass
+blueprint = AppGroup('blueprint')
 
-@blueprint.command()
+@blueprint.command("create")
 @click.argument('name')
 def create(name):
-"""Create new Flask Blueprint"""
     basepath = os.path.abspath(os.path.dirname(__name__)) + f'/app/blueprints/{name}'
     try:
         if not os.path.exists(basepath):
@@ -31,3 +28,5 @@ def create(name):
         print(f"Something went wrong with creating the blueprint called {name}")
         print(error)
     return print("Blueprint created successfully")
+
+app.cli.add_command(blueprint)
